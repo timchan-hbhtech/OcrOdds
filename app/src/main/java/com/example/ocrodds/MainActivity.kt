@@ -26,15 +26,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.ocrodds.data.OcrOddsDataProvider
-import com.example.ocrodds.model.Odds
 import com.example.ocrodds.model.OddsType
 import com.example.ocrodds.ui.CameraScreen
 import com.example.ocrodds.ui.OcrOddsViewModel
 import com.example.ocrodds.ui.ResultScreen
 import com.example.ocrodds.ui.theme.OcrOddsTheme
-import com.google.mlkit.vision.text.Text
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.opencv.android.OpenCVLoader
 
 class MainActivity : ComponentActivity() {

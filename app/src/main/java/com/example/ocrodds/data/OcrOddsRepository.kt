@@ -2,10 +2,8 @@ package com.example.ocrodds.data
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
-import com.jcraft.jsch.Session
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream

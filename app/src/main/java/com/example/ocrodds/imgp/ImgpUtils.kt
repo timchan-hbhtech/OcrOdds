@@ -8,24 +8,24 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.media.ExifInterface
+import android.util.Log
 import androidx.core.graphics.createBitmap
 import org.opencv.android.Utils
 import org.opencv.calib3d.Calib3d
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.Point
+import org.opencv.core.Rect
 import org.opencv.core.Scalar
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
+import java.io.File
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.component3
+import kotlin.collections.listOf
 import kotlin.math.cos
 import kotlin.math.sin
-import org.opencv.core.*
-import java.io.File
-import android.graphics.Color
-import android.util.Log
-import androidx.core.graphics.set
-import androidx.core.graphics.get
-import kotlin.math.ceil
 
 
 fun Bitmap.preprocessImage(): Bitmap {

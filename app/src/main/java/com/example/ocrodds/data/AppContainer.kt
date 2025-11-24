@@ -1,7 +1,5 @@
 package com.example.ocrodds.data
 
-import android.content.Context
-
 interface AppContainer {
     val ocrOddsRepository: OcrOddsRepository
 }
