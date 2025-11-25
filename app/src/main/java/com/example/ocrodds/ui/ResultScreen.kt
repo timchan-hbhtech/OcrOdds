@@ -97,7 +97,8 @@ fun ResultScreen(
     onRacenumChange: (String) -> Unit = {},
     onSiteChange: (String) -> Unit = {},
     onCellValueChange: (Int, Int, String) -> Unit = { _, _, _ -> },
-    onAddData: () -> Unit = {},
+    onAddNewData: () -> Unit = {},
+    onDeleteNewData: () -> Unit = {},
     onShowButtonBar: (Int) -> Unit = { _ -> },
     onDeleteOdds: (Int) -> Unit = { _ -> },
     onInsertOdds: (Int) -> Unit = { _ -> },
@@ -212,7 +213,8 @@ fun ResultScreen(
                         uiState = uiState,
                         tableHeader = tableHeader,
                         onCellValueChange = onCellValueChange,
-                        onAddData = onAddData,
+                        onAddNewData = onAddNewData,
+                        onDeleteNewOdds = onDeleteNewData,
                         onShowButtonBar = onShowButtonBar,
                         onDeleteOdds = onDeleteOdds,
                         onInsertOdds = onInsertOdds
@@ -363,7 +365,8 @@ fun OddsTable(
     tableHeader: List<String>,
     uiState: OcrOddsUiState,
     onCellValueChange: (Int, Int, String) -> Unit = { _, _, _ -> },
-    onAddData: () -> Unit = {},
+    onAddNewData: () -> Unit = {},
+    onDeleteNewOdds: () -> Unit = {},
     onShowButtonBar: (Int) -> Unit = { _ -> },
     onDeleteOdds: (Int) -> Unit = { _ -> },
     onInsertOdds: (Int) -> Unit = { _ -> }
@@ -425,7 +428,10 @@ fun OddsTable(
                             ) {
                                 Text(
                                     fontSize = 12.sp,
-                                    text = "${i + 1}"
+                                    text = when(uiState.oddsType) {
+                                        OddsType.WINPLACE -> if(uiState.odds.data[i].subList(0, 2) in uiState.newAffectedRows[0]) "${i + 1}+" else "${i + 1}"
+                                        OddsType.QUINELLA -> if(uiState.odds.qData[i].subList(0, 2) in uiState.newAffectedRows[1]) "${i + 1}+" else "${i + 1}"
+                                    }
                                 )
                             }
 
@@ -545,7 +551,7 @@ fun OddsTable(
                 Button(
                     modifier = Modifier.wrapContentSize(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
-                    onClick = { onAddData() }
+                    onClick = { onAddNewData() }
                 ) {
                     Row(
                         modifier = Modifier.padding(0.dp),
@@ -558,7 +564,28 @@ fun OddsTable(
                             contentDescription = "Favorite icon"
                         )
                         Text(
-                            text = "Add data"
+                            text = "Add Data"
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Button(
+                    modifier = Modifier.wrapContentSize(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                    onClick = { onDeleteNewOdds() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            tint = Color.Gray,
+                            contentDescription = "Favorite icon"
+                        )
+                        Text(
+                            text = "Delete Data"
                         )
                     }
                 }
@@ -603,7 +630,7 @@ fun OddsTableTextField(
                 }
             }
         ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
         textStyle = TextStyle(fontSize = 12.sp),
         shape = RoundedCornerShape(0.dp),
         modifier = modifier

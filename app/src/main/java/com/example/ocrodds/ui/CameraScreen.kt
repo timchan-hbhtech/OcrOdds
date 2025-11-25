@@ -74,8 +74,16 @@ import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -358,6 +366,8 @@ fun CameraScreen(
                     }
                 }
 
+                val textMeasurer = rememberTextMeasurer()
+
                 // Overlay with rectangle and blur
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val canvasWidth = size.width
@@ -394,6 +404,50 @@ fun CameraScreen(
                         size = rectSize,
                         style = Stroke(width = 4.dp.toPx())
                     )
+
+                    // Draw text "TOP" inside rectangle at top center
+                    val textLayoutResult = textMeasurer.measure(
+                        text = AnnotatedString("TOP"),
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    )
+                    when(uiState.oddsType) {
+                        OddsType.WINPLACE -> {
+                            val textX = rectLeft + (rectSize.width - textLayoutResult.size.width) / 2
+                            val textY = rectTop - textLayoutResult.size.height - 16f // padding from top
+
+                            drawText(
+                                textLayoutResult,
+                                topLeft = Offset(textX, textY)
+                            )
+                        }
+                        OddsType.QUINELLA -> {
+                            // Position: right edge, vertically centered
+                            val textX = rectLeft + rectSize.width
+                            val textY = rectTop + rectSize.height / 2f
+
+                            withTransform({
+                                // Rotate around the anchor point (textX, textY)
+                                rotate(
+                                    degrees = 90f,
+                                    pivot = Offset(textX, textY)
+                                )
+                                translate(
+                                    left = -110f,
+                                    top = -65f
+                                )
+                            }) {
+                                drawText(
+                                    textLayoutResult,
+                                    topLeft = Offset(textX, textY - textLayoutResult.size.height / 2f)
+                                )
+                            }
+                        }
+                    }
                 }
 
             }

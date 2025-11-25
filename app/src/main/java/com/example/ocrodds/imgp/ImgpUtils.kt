@@ -65,7 +65,7 @@ fun Bitmap.sharpen(): Bitmap {
 
     // Apply sharpening filter (Laplacian or custom kernel)
     val sharpenedMat = Mat()
-    val kernel = Mat(3, 3, org.opencv.core.CvType.CV_32F).apply {
+    val kernel = Mat(3, 3, CvType.CV_32F).apply {
         put(0, 0, 0.0, -1.0, 0.0)
         put(1, 0, -1.0, 5.0, -1.0)
         put(2, 0, 0.0, -1.0, 0.0)
@@ -207,8 +207,8 @@ fun Bitmap.eraseCircle(
                     Rect(
                         (center.x + radius + 7).toInt(),
                         (center.y - radius - 40 * radius / 80).toInt(),
-                        (moveRectWidth * radius / 40).toInt(),
-                        (radius + moveRectHeight * radius / 40).toInt()
+                        (moveRectWidth * radius / 40),
+                        (radius + moveRectHeight * radius / 40)
                     ),
                     moveRightOffset,
                     backgroundColor

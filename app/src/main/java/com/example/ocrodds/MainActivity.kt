@@ -121,17 +121,20 @@ fun OcrOddsApp() {
                     onCellValueChange = { i, j, newValue ->
                         viewModel.updateOdds(i, j, newValue.replace("\n", ""))
                     },
-                    onAddData = {
+                    onAddNewData = {
                         navController.navigate("camera")
+                    },
+                    onDeleteNewData = {
+                        viewModel.onDeleteNewData()
                     },
                     onShowButtonBar = {
                         viewModel.toggleOddsTableButtonBarVisibility(it)
                     },
                     onDeleteOdds = {
-                        viewModel.deleteOdds(it)
+                        viewModel.onDeleteOdds(it)
                     },
                     onInsertOdds = {
-                        viewModel.insertOdds(it)
+                        viewModel.onInsertOdds(it)
                     },
                     onOddsTypeChange = {
                         viewModel.updateOddsType(OddsType.valueOf(it))

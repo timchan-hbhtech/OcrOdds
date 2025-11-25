@@ -74,33 +74,55 @@ object Utils {
     private fun cleanTable(table: List<List<String>>): List<List<String>> =
         table.map { row -> row.map { it.trim() } }
 
-    fun mergeTables(table1: List<List<String>>, table2: List<List<String>>): List<List<String>> {
+    fun mergeTables(
+        table1: List<List<String>>,
+        table2: List<List<String>>
+    ): Pair<List<List<String>>, List<List<String>>> {
         val cleaned1 = cleanTable(table1)
         val cleaned2 = cleanTable(table2)
 
         val result = cleaned1.toMutableList()
+        val affectedRows = mutableListOf<List<String>>()
+
         // Build a set of first-two-column keys from table1
         val existingKeys = cleaned1.mapNotNull { it.takeIf { it.size >= 2 }?.subList(0, 2) }.toSet()
 
-        // Filter table2 for valid rows:
-        // - At least 2 columns
-        // - columns are not blank
-        // - Not already in table1 by first two columns
+        // Filter table2 for valid rows
         val toInsert = cleaned2.filter { row ->
-            row.size >= 2 && row[0].isNotBlank() && row[1].isNotBlank() && row.subList(0, 2) !in existingKeys
+            row.size >= 2 &&
+                    row[0].isNotBlank() &&
+                    row[1].isNotBlank() &&
+                    row.subList(0, 2) !in existingKeys
         }
-
 
         for (row in toInsert) {
             val index = result.indexOfFirst { it[0] == row[0] }
             if (index != -1) {
+                // Case 1: match first column → insert right after
                 result.add(index + 1, row)
+                affectedRows.add(row.subList(0, 2))
             } else {
-                result.add(row)
+                // Case 2: no match → insert by numeric order of second column
+                val rowValue = row[1].toDoubleOrNull()
+                if (rowValue != null) {
+                    val insertIndex = result.indexOfFirst { it[1].toDoubleOrNull()?.let { v -> v > rowValue } == true }
+                    if (insertIndex != -1) {
+                        result.add(insertIndex, row)
+                        affectedRows.add(row.subList(0, 2))
+                    } else {
+                        // If all values are smaller, append at the end
+                        result.add(row)
+                        affectedRows.add(row.subList(0, 2))
+                    }
+                } else {
+                    // If second column is not numeric, just append
+                    result.add(row)
+                    affectedRows.add(row.subList(0, 2))
+                }
             }
         }
 
-        return result
+        return Pair(result, affectedRows)
     }
 
 

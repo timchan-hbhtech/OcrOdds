@@ -93,7 +93,7 @@ class OcrOddsViewModel(
         _camera.value?.cameraControl?.setZoomRatio(zoomSliderPos)
     }
 
-    fun deleteOdds(deleteIndex: Int) {
+    private fun deleteOdds(deleteIndex: Int) {
         _uiState.update {
             when(uiState.value.oddsType) {
                 OddsType.WINPLACE -> {
@@ -111,13 +111,44 @@ class OcrOddsViewModel(
                     )
                 }
             }
-
         }
+    }
+
+    private fun deleteNewOdds() {
+        _uiState.update {
+            when(it.oddsType) {
+                OddsType.WINPLACE -> {
+                    it.copy(
+                        odds = it.odds.copy(
+                            data = it.odds.data.filterIndexed { index, _ -> it.odds.data[index].subList(0, 2) !in it.newAffectedRows[0] }
+                        )
+                    )
+                }
+                OddsType.QUINELLA -> {
+                    it.copy(
+                        odds = it.odds.copy(
+                            qData = it.odds.qData.filterIndexed { index, _ -> it.odds.qData[index].subList(0, 2) !in it.newAffectedRows[1] }
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun onDeleteOdds(deleteIndex: Int) {
+        deleteOdds(deleteIndex)
         updateOddsTableButtonBarVisibleIndex(-1)
         updateTrackTake()
     }
 
-    fun insertOdds(index: Int) {
+    fun onDeleteNewData() {
+        deleteNewOdds()
+        updateNewAffectedRows(emptyList())
+        updateOddsTableButtonBarVisibleIndex(-1)
+        updateTrackTake()
+    }
+
+    private fun insertOdds(index: Int) {
         _uiState.update {
             when(uiState.value.oddsType) {
                 OddsType.WINPLACE -> {
@@ -141,6 +172,10 @@ class OcrOddsViewModel(
             }
 
         }
+    }
+
+    fun onInsertOdds(index: Int) {
+        insertOdds(index)
         updateOddsTableButtonBarVisibleIndex(-1)
         updateTrackTake()
     }
@@ -375,10 +410,15 @@ class OcrOddsViewModel(
     }
 
     private fun addOdds(tableData: List<List<String>>) {
-        when(uiState.value.oddsType) {
-            OddsType.WINPLACE -> updateOdds(Utils.mergeTables(uiState.value.odds.data, tableData))
-            OddsType.QUINELLA -> updateOdds(Utils.mergeTables(uiState.value.odds.qData, tableData))
+        val oddsData = when(uiState.value.oddsType) {
+            OddsType.WINPLACE -> uiState.value.odds.data
+            OddsType.QUINELLA -> uiState.value.odds.qData
         }
+
+        val (mergedTable, newAffectedRows) = Utils.mergeTables(oddsData, tableData)
+
+        updateOdds(mergedTable)
+        updateNewAffectedRows(newAffectedRows)
     }
 
     private fun updateOdds(tableData: List<List<String>>) {
@@ -441,6 +481,19 @@ class OcrOddsViewModel(
                     qData = emptyList<List<String>>()
                 )
             )
+        }
+    }
+
+    private fun updateNewAffectedRows(newAffectedRows: List<List<String>>) {
+        _uiState.update { state ->
+            val currentLists = state.newAffectedRows ?: listOf(emptyList(), emptyList())
+            val updatedLists = currentLists.toMutableList().apply {
+                when(uiState.value.oddsType) {
+                    OddsType.WINPLACE -> this[0] = newAffectedRows
+                    OddsType.QUINELLA -> this[1] = newAffectedRows
+                }
+            }
+            state.copy(newAffectedRows = updatedLists)
         }
     }
 
@@ -670,6 +723,10 @@ data class OcrOddsUiState(
     val trackTake: String = "-",
     val oddsTableButtonBarVisibleIndex: Int = -1,
     val navBarIndex: Int = 0,
+    val newAffectedRows: List<List<List<String>>> = listOf(
+        emptyList(), // winplace
+        emptyList()  // quinella
+    ),
     val zoomSliderPos: Float = 1.0f
 )
 
