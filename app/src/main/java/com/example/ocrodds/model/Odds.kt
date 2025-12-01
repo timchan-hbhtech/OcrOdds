@@ -12,8 +12,8 @@ data class Odds(
     val data: List<List<String>> = emptyList(),
     @Transient
     val qData: List<List<String>> = emptyList(),
-    val odds: HashMap<String, String> = hashMapOf(),
-    val qOdds: HashMap<String, String> = hashMapOf()
+    val odds: LinkedHashMap<String, String> = LinkedHashMap(),
+    val qOdds: LinkedHashMap<String, String> = LinkedHashMap()
 ) {
     init {
         odds.clear()
@@ -29,4 +29,20 @@ data class Odds(
             }
         }
     }
+}
+
+@Serializable
+data class OddsDTO(
+    val raceday: String,
+    val sitecode: String,
+    val race: String,
+    val odds: LinkedHashMap<String, String> = LinkedHashMap(),
+    val qOdds: LinkedHashMap<String, String> = LinkedHashMap()
+)
+
+fun OddsDTO.toOdds(): Odds {
+    val data = odds.map { listOf(it.key, it.value) }
+    val qData = qOdds.map { listOf(it.key, it.value) }
+
+    return Odds(raceday, sitecode, race, data, qData, odds, qOdds)
 }

@@ -90,4 +90,6 @@ dependencies {
 
     implementation("org.opencv:opencv:4.10.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
 }

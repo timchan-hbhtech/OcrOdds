@@ -127,6 +127,12 @@ fun OcrOddsApp() {
                     onDeleteNewData = {
                         viewModel.onDeleteNewData()
                     },
+                    onSyncWeb = {
+                        viewModel.synchronizeToScp(context)
+                    },
+                    onSyncLocal = {
+                        viewModel.synchronizeFromScp(context)
+                    },
                     onShowButtonBar = {
                         viewModel.toggleOddsTableButtonBarVisibility(it)
                     },

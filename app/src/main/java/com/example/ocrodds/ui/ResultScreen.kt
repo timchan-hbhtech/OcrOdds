@@ -29,9 +29,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -99,6 +102,8 @@ fun ResultScreen(
     onCellValueChange: (Int, Int, String) -> Unit = { _, _, _ -> },
     onAddNewData: () -> Unit = {},
     onDeleteNewData: () -> Unit = {},
+    onSyncWeb: () -> Unit = {},
+    onSyncLocal: () -> Unit = {},
     onShowButtonBar: (Int) -> Unit = { _ -> },
     onDeleteOdds: (Int) -> Unit = { _ -> },
     onInsertOdds: (Int) -> Unit = { _ -> },
@@ -215,6 +220,8 @@ fun ResultScreen(
                         onCellValueChange = onCellValueChange,
                         onAddNewData = onAddNewData,
                         onDeleteNewOdds = onDeleteNewData,
+                        onSyncWeb = onSyncWeb,
+                        onSyncLocal = onSyncLocal,
                         onShowButtonBar = onShowButtonBar,
                         onDeleteOdds = onDeleteOdds,
                         onInsertOdds = onInsertOdds
@@ -367,6 +374,8 @@ fun OddsTable(
     onCellValueChange: (Int, Int, String) -> Unit = { _, _, _ -> },
     onAddNewData: () -> Unit = {},
     onDeleteNewOdds: () -> Unit = {},
+    onSyncWeb: () -> Unit = {},
+    onSyncLocal: () -> Unit = {},
     onShowButtonBar: (Int) -> Unit = { _ -> },
     onDeleteOdds: (Int) -> Unit = { _ -> },
     onInsertOdds: (Int) -> Unit = { _ -> }
@@ -586,6 +595,55 @@ fun OddsTable(
                         )
                         Text(
                             text = "Delete Data"
+                        )
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    modifier = Modifier.wrapContentSize(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                    onClick = { onSyncWeb() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Upload,
+                            tint = Color.Gray,
+                            contentDescription = "Favorite icon"
+                        )
+                        Text(
+                            text = "Sync web"
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Button(
+                    modifier = Modifier.wrapContentSize(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                    onClick = { onSyncLocal() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            tint = Color.Gray,
+                            contentDescription = "Favorite icon"
+                        )
+                        Text(
+                            text = "Sync local"
                         )
                     }
                 }

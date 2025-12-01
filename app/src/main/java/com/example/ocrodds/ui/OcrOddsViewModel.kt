@@ -93,9 +93,9 @@ class OcrOddsViewModel(
         _camera.value?.cameraControl?.setZoomRatio(zoomSliderPos)
     }
 
-    private fun deleteOdds(deleteIndex: Int) {
+    private fun deleteOdds(deleteIndex: Int, oddsType: OddsType = uiState.value.oddsType) {
         _uiState.update {
-            when(uiState.value.oddsType) {
+            when(oddsType) {
                 OddsType.WINPLACE -> {
                     it.copy(
                         odds = it.odds.copy(
@@ -148,9 +148,9 @@ class OcrOddsViewModel(
         updateTrackTake()
     }
 
-    private fun insertOdds(index: Int) {
+    private fun insertOdds(index: Int, oddsType: OddsType = uiState.value.oddsType) {
         _uiState.update {
-            when(uiState.value.oddsType) {
+            when(oddsType) {
                 OddsType.WINPLACE -> {
                     it.copy(
                         odds = it.odds.copy(
@@ -409,21 +409,26 @@ class OcrOddsViewModel(
         }
     }
 
-    private fun addOdds(tableData: List<List<String>>) {
-        val oddsData = when(uiState.value.oddsType) {
+    private fun addOdds(tableData: List<List<String>>, oddsType: OddsType = uiState.value.oddsType) {
+        val oddsData = when(oddsType) {
             OddsType.WINPLACE -> uiState.value.odds.data
             OddsType.QUINELLA -> uiState.value.odds.qData
         }
 
         val (mergedTable, newAffectedRows) = Utils.mergeTables(oddsData, tableData)
 
-        updateOdds(mergedTable)
-        updateNewAffectedRows(newAffectedRows)
+        updateOdds(mergedTable, oddsType)
+        updateNewAffectedRows(newAffectedRows, oddsType)
     }
 
-    private fun updateOdds(tableData: List<List<String>>) {
+    private fun addOdds(odds: Odds) {
+        addOdds(odds.data, OddsType.WINPLACE)
+        addOdds(odds.qData, OddsType.QUINELLA)
+    }
+
+    private fun updateOdds(tableData: List<List<String>>, oddsType: OddsType = uiState.value.oddsType) {
         _uiState.update {
-            when(uiState.value.oddsType) {
+            when(oddsType) {
                 OddsType.WINPLACE -> {
                     it.copy(
                         odds = it.odds.copy(
@@ -443,9 +448,9 @@ class OcrOddsViewModel(
         updateTrackTake()
     }
 
-    fun updateOdds(rowIndex: Int, colIndex: Int, newValue: String) {
+    fun updateOdds(rowIndex: Int, colIndex: Int, newValue: String, oddsType: OddsType = uiState.value.oddsType) {
         _uiState.update {
-            when(uiState.value.oddsType) {
+            when(oddsType) {
                 OddsType.WINPLACE -> {
                     it.copy(
                         odds = it.odds.copy(
@@ -484,11 +489,11 @@ class OcrOddsViewModel(
         }
     }
 
-    private fun updateNewAffectedRows(newAffectedRows: List<List<String>>) {
+    private fun updateNewAffectedRows(newAffectedRows: List<List<String>>, oddsType: OddsType = uiState.value.oddsType) {
         _uiState.update { state ->
             val currentLists = state.newAffectedRows ?: listOf(emptyList(), emptyList())
             val updatedLists = currentLists.toMutableList().apply {
-                when(uiState.value.oddsType) {
+                when(oddsType) {
                     OddsType.WINPLACE -> this[0] = newAffectedRows
                     OddsType.QUINELLA -> this[1] = newAffectedRows
                 }
@@ -509,7 +514,7 @@ class OcrOddsViewModel(
                 oddsType = oddsType
             )
         }
-        when(uiState.value.oddsType) {
+        when(oddsType) {
             OddsType.WINPLACE -> updateNavBarIndex(0)
             OddsType.QUINELLA -> updateNavBarIndex(1)
         }
@@ -526,13 +531,13 @@ class OcrOddsViewModel(
     }
 
     @SuppressLint("DefaultLocale")
-    fun updateTrackTake() {
-        val oddsIndex = when (uiState.value.oddsType) {
+    fun updateTrackTake(oddsType: OddsType = uiState.value.oddsType) {
+        val oddsIndex = when (oddsType) {
             OddsType.WINPLACE -> 1
             OddsType.QUINELLA -> 1
         }
 
-        val oddsData = when (uiState.value.oddsType) {
+        val oddsData = when (oddsType) {
             OddsType.WINPLACE -> uiState.value.odds.data
             OddsType.QUINELLA -> uiState.value.odds.qData
         }
@@ -560,16 +565,14 @@ class OcrOddsViewModel(
     fun uploadToSCP(context: Context) {
         viewModelScope.launch {
             val dateFolder = uiState.value.odds.raceday
-            val filename = when(uiState.value.oddsType) {
-                OddsType.WINPLACE -> "${uiState.value.odds.sitecode}-${uiState.value.odds.race}.json"
-                OddsType.QUINELLA -> "${uiState.value.odds.sitecode}-${uiState.value.odds.race}.json"
-            }
+            val filename = "${uiState.value.odds.sitecode}-${uiState.value.odds.race}.json"
+
             val result = ocrOddsRepository.uploadToSCP(
                 context,
                 Json.encodeToString(uiState.value.odds),
-                dateFolder,
-                filename
+                "$dateFolder/$filename"
             )
+
             result.onSuccess {
                 Toast.makeText(context, "Upload successful", Toast.LENGTH_SHORT).show()
             }.onFailure { e ->
@@ -577,6 +580,71 @@ class OcrOddsViewModel(
             }
         }
     }
+
+    fun synchronizeToScp(context: Context) {
+        viewModelScope.launch {
+            val dateFolder = uiState.value.odds.raceday
+            val filename = "${uiState.value.odds.sitecode}-${uiState.value.odds.race}.json"
+
+            val result = ocrOddsRepository.uploadToSCP(
+                context,
+                Json.encodeToString(uiState.value.odds),
+                "temp/$dateFolder/$filename"
+            )
+
+            result.onSuccess {
+                Toast.makeText(context, "Successfully synchronized to SCP", Toast.LENGTH_SHORT).show()
+            }.onFailure { e ->
+                Toast.makeText(context, "Failed to synchronize to SCP: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    fun synchronizeFromScp(context: Context) {
+        viewModelScope.launch {
+            val dateFolder = uiState.value.odds.raceday
+            val filename = "${uiState.value.odds.sitecode}-${uiState.value.odds.race}.json"
+            val remoteFilePath = "temp/$dateFolder/$filename"
+
+            val result = ocrOddsRepository.downloadOddsFromSCP(context, remoteFilePath)
+            result.onSuccess { remoteOdds ->
+                val localOdds = uiState.value.odds
+
+                // Merge data
+                val mergedData = localOdds.data.toMutableList()
+                remoteOdds.odds.map {
+                    listOf(it.key, it.value)
+                }.forEach { row ->
+                    if (row + listOf("", "") !in mergedData) {
+                        mergedData.add(row + listOf("", ""))
+                    }
+                }
+
+                // Merge qData
+                val mergedQData = localOdds.qData.toMutableList()
+                remoteOdds.qOdds.map {
+                    listOf(it.key, it.value)
+                }.forEach { row ->
+                    if (row !in mergedQData) {
+                        mergedQData.add(row)
+                    }
+                }
+
+                // Update uiState with merged odds
+                val updatedOdds = localOdds.copy(
+                    data = mergedData,
+                    qData = mergedQData
+                )
+                Log.d("Sync from", updatedOdds.toString())
+                addOdds(updatedOdds)
+
+                Toast.makeText(context, "Successfully synchronized from SCP", Toast.LENGTH_SHORT).show()
+            }.onFailure { e ->
+                Toast.makeText(context, "Failed to synchronize from SCP: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
 
     fun updateOriginalBitmap(originalBitmap: Bitmap?) {
         _imageUiState.update {
