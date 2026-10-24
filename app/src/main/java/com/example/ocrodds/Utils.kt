@@ -43,11 +43,11 @@ object Utils {
     }
 
     fun isValidCombo(combo: String): Boolean {
-        return combo.split("+").all {
-            val num = it.parseStrictInt()
-            num != null && num in 1..20
-        }
+        val numbers = combo.split("+").map { it.parseStrictInt() }
+        return numbers.all { it != null && it in 1..20 } &&
+                numbers.size == numbers.filterNotNull().toSet().size
     }
+
 
     fun findMissingCombinations(pairs: List<String>): List<String> {
         // Extract unique elements from the input

@@ -47,10 +47,11 @@ object OcrOddsDataProvider {
                 listOf("3+10", "7.5"),
                 listOf("3+10", "7.9"),
                 listOf("1+3", "231.8"),
-                listOf("10+11", "29.1"),
+                listOf("10+10", "29.1"),
                 listOf("1+5", "33.2"),
                 listOf("1+91", "38.1"),
                 listOf("5+8", "62.9"),
+                listOf("1+00", "65.8"),
                 listOf("1", "75.3"),
             )
         )

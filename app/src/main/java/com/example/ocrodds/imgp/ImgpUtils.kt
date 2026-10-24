@@ -3,6 +3,7 @@ package com.example.ocrodds.imgp
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
@@ -10,6 +11,7 @@ import android.graphics.Paint
 import android.media.ExifInterface
 import android.util.Log
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.get
 import org.opencv.android.Utils
 import org.opencv.calib3d.Calib3d
 import org.opencv.core.CvType
@@ -26,6 +28,8 @@ import kotlin.collections.component3
 import kotlin.collections.listOf
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.core.graphics.set
+import java.nio.IntBuffer
 
 
 fun Bitmap.preprocessImage(): Bitmap {
@@ -138,7 +142,8 @@ fun Bitmap.rotateBitmap(degrees: Float): Bitmap {
 fun Bitmap.eraseCircle(
     moveRectWidth: Int,
     moveRectHeight: Int,
-    moveRightOffset: Int
+    moveRightOffset: Int,
+    useAvgEnvColor: Boolean = false
 ): Bitmap {
     val inputMat = Mat()
     Utils.bitmapToMat(this, inputMat)
@@ -187,7 +192,7 @@ fun Bitmap.eraseCircle(
                     center.y + (sampleRadius * sin(Math.PI))
                 )
                 val backgroundColor = if (samplePoint.x >= 0 && samplePoint.x < mat.cols() &&
-                    samplePoint.y >= 0 && samplePoint.y < mat.rows()) {
+                    samplePoint.y >= 0 && samplePoint.y < mat.rows() && useAvgEnvColor) {
                     var (r, g, b) = listOf(0.0, 0.0, 0.0)
                     for (offsetI in arrayOf(-5, -2, 0, 2, 5)) {
                         for (offsetJ in arrayOf(-1, 0, 1)) {
@@ -269,6 +274,39 @@ fun Bitmap.correctDistortion(): Bitmap {
 
     return outputBitmap
 }
+
+/*
+- Low threshold (e.g. 30–50):
+Only very dark pixels (almost black) will turn black. Everything else becomes white.
+→ Result: mostly white image with only the darkest areas preserved.
+- Medium threshold (e.g. 100–120):
+Darker grays also turn black, so more detail is preserved.
+→ Result: more balanced black/white.
+- High threshold (e.g. 180+):
+Even mid-tones turn black.
+→ Result: much more black, less white.
+ */
+fun Bitmap.toBlackAndWhite(threshold: Int = 50): Bitmap {
+    val width = this.width
+    val height = this.height
+    val buffer = IntArray(width * height)
+    copyPixelsToBuffer(IntBuffer.wrap(buffer))
+
+    for (i in buffer.indices) {
+        val r = Color.red(buffer[i])
+        val g = Color.green(buffer[i])
+        val b = Color.blue(buffer[i])
+        val luminance = (0.299 * r + 0.587 * g + 0.114 * b).toInt()
+        buffer[i] = if (luminance < threshold) Color.BLACK else Color.WHITE
+    }
+
+    val bwBitmap = createBitmap(width, height)
+    bwBitmap.setPixels(buffer, 0, width, 0, 0, width, height)
+    return bwBitmap
+}
+
+
+
 
 fun File.correctImageOrientation(): Bitmap {
     // Decode the bitmap

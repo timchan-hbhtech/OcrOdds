@@ -26,6 +26,7 @@ import com.example.ocrodds.imgp.eraseCircle
 import com.example.ocrodds.imgp.maskBitmapExceptRect
 import com.example.ocrodds.imgp.preprocessImage
 import com.example.ocrodds.imgp.rotateBitmap
+import com.example.ocrodds.imgp.toBlackAndWhite
 import com.example.ocrodds.model.Odds
 import com.example.ocrodds.model.OddsType
 import com.google.mlkit.vision.common.InputImage
@@ -712,13 +713,14 @@ class OcrOddsViewModel(
                         OddsType.WINPLACE -> bitmap
                             .preprocessImage()
                             .maskBitmapExceptRect(maskRegion)
-                            .eraseCircle(350, 80, 120)
+                            .eraseCircle(350, 80, 120, true)
                             //.sharpen()
                         OddsType.QUINELLA -> bitmap
                             .preprocessImage()
+                            //.toBlackAndWhite(110)
                             .maskBitmapExceptRect(maskRegion)
                             .rotateBitmap(-90f)
-                            .eraseCircle(120, 80, 0)
+                            .eraseCircle(120, 80, 0, true)
                     }
 
                     updateProcessedBitmap(processedBitmap)

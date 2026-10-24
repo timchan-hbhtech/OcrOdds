@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -80,6 +79,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ocrodds.BuildConfig
 import com.example.ocrodds.Utils
 import com.example.ocrodds.Utils.findColumnDuplicates
 import com.example.ocrodds.Utils.findDecreasingIndices
@@ -120,133 +120,149 @@ fun ResultScreen(
 
     val focusManager = LocalFocusManager.current
 
-    Scaffold(
-        topBar = {
-            val options = OddsType.entries.map { it.name } + listOf("IMAGE")
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier
-                ) {
-                    options.forEachIndexed { index, label ->
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = options.size
-                            ),
-                            onClick = {
-                                onNavBarIndexChange(index)
-                                if(index < 2) {
-                                    onOddsTypeChange(label)
-                                }
-                            },
-                            selected = index == uiState.navBarIndex,
-                            label = { Text(label) }
-                        )
-                    }
-                }
-            }
-
-        },
-        bottomBar = {
-            if(!imeVisible) {
-                ResultScreenActionButtonBar(
-                    modifier = Modifier.padding(top = 5.dp),
-                    onReset = {
-                        openResetDialog = true
-                    },
-                    onSend = {
-                        openSendDialog = true
-                    }
-                )
-            }
-
-        },
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-    ) { paddingValues ->
-        when(uiState.navBarIndex) {
-            0, 1 -> {
+    ) {
+
+        Scaffold(
+            topBar = {
+                val options = OddsType.entries.map { it.name } + listOf("IMAGE")
                 Column(
                     modifier = Modifier
-                        .fillMaxHeight() // Constrain height
-                        .padding(paddingValues)
-                        .clickable(
-                            // This ensures clicks outside the TextField clear focus
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() }
-                        ) {
-                            focusManager.clearFocus()
-                        }
+                        .fillMaxWidth()
+                        .padding(bottom = 5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    OutlinedTextField(
-                        value = uiState.odds.raceday,
-                        onValueChange = { newText ->
-                            val digitsOnly = newText.filter { it.isDigit() }.take(8)
-                            onRacedayChange(digitsOnly)
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier
+                    ) {
+                        options.forEachIndexed { index, label ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = options.size
+                                ),
+                                onClick = {
+                                    onNavBarIndexChange(index)
+                                    if (index < 2) {
+                                        onOddsTypeChange(label)
+                                    }
+                                },
+                                selected = index == uiState.navBarIndex,
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                }
+
+            },
+            bottomBar = {
+                if (!imeVisible) {
+                    ResultScreenActionButtonBar(
+                        modifier = Modifier.padding(top = 5.dp),
+                        onReset = {
+                            openResetDialog = true
                         },
-                        label = { Text("Enter Date (yyyy/MM/dd)") },
-                        visualTransformation = DateVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth()
+                        onSend = {
+                            openSendDialog = true
+                        }
                     )
-                    Row {
-                        OptionMenu(
-                            name = "SITE",
-                            value = uiState.odds.sitecode,
-                            options = OcrOddsDataProvider.getSites(),
-                            onOptionChange = onSiteChange,
-                            modifier = Modifier.weight(1f).fillMaxWidth().height(56.dp)
+                }
+
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) { paddingValues ->
+            when (uiState.navBarIndex) {
+                0, 1 -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight() // Constrain height
+                            .padding(paddingValues)
+                            .clickable(
+                                // This ensures clicks outside the TextField clear focus
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) {
+                                focusManager.clearFocus()
+                            }
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.odds.raceday,
+                            onValueChange = { newText ->
+                                val digitsOnly = newText.filter { it.isDigit() }.take(8)
+                                onRacedayChange(digitsOnly)
+                            },
+                            label = { Text("Enter Date (yyyy/MM/dd)") },
+                            visualTransformation = DateVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(
-                            modifier = Modifier.width(5.dp)
+                        Row {
+                            OptionMenu(
+                                name = "SITE",
+                                value = uiState.odds.sitecode,
+                                options = OcrOddsDataProvider.getSites(),
+                                onOptionChange = onSiteChange,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            )
+                            Spacer(
+                                modifier = Modifier.width(5.dp)
+                            )
+                            OptionMenu(
+                                name = "RACENUM",
+                                value = uiState.odds.race,
+                                options = OcrOddsDataProvider.getRacenums(),
+                                onOptionChange = onRacenumChange,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        OddsTable(
+                            uiState = uiState,
+                            tableHeader = tableHeader,
+                            onCellValueChange = onCellValueChange,
+                            onAddNewData = onAddNewData,
+                            onDeleteNewOdds = onDeleteNewData,
+                            onSyncWeb = onSyncWeb,
+                            onSyncLocal = onSyncLocal,
+                            onShowButtonBar = onShowButtonBar,
+                            onDeleteOdds = onDeleteOdds,
+                            onInsertOdds = onInsertOdds
                         )
-                        OptionMenu(
-                            name = "RACENUM",
-                            value = uiState.odds.race,
-                            options = OcrOddsDataProvider.getRacenums(),
-                            onOptionChange = onRacenumChange,
-                            modifier = Modifier.weight(1f).fillMaxWidth().height(56.dp)
-                        )
+
+                    }
+                }
+
+                2 -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        imageUiState.processedBitmap?.let {
+                            Image(
+                                bitmap = it.asImageBitmap(),
+                                contentDescription = "Processed Image with Circles",
+                                //modifier = Modifier.size(300.dp)
+                            )
+                        } ?: Text("No image processed yet")
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-                    OddsTable(
-                        uiState = uiState,
-                        tableHeader = tableHeader,
-                        onCellValueChange = onCellValueChange,
-                        onAddNewData = onAddNewData,
-                        onDeleteNewOdds = onDeleteNewData,
-                        onSyncWeb = onSyncWeb,
-                        onSyncLocal = onSyncLocal,
-                        onShowButtonBar = onShowButtonBar,
-                        onDeleteOdds = onDeleteOdds,
-                        onInsertOdds = onInsertOdds
-                    )
-
                 }
-            }
-            2 -> {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    imageUiState.processedBitmap?.let {
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = "Processed Image with Circles",
-                            //modifier = Modifier.size(300.dp)
-                        )
-                    } ?: Text("No image processed yet")
-                }
-
             }
         }
-
         if (openSendDialog) {
             val prettyJson = Json { // this returns the JsonBuilder
                 prettyPrint = true
@@ -263,7 +279,9 @@ fun ResultScreen(
                 title = { Text("Send Data") },
                 text = {
                     Column(
-                        modifier = Modifier.verticalScroll(scrollState).fillMaxWidth()
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                            .fillMaxWidth()
                     ) {
                         Text(oddsJsonString)
                     }
@@ -292,7 +310,9 @@ fun ResultScreen(
                 title = { Text("Reset Data") },
                 text = {
                     Column(
-                        modifier = Modifier.verticalScroll(scrollState).fillMaxWidth()
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                            .fillMaxWidth()
                     ) {
                         Text("If confirmed, all data will be discarded.")
                     }
@@ -312,6 +332,16 @@ fun ResultScreen(
                 }
             )
         }
+
+        Text(
+            text = "v${BuildConfig.VERSION_NAME}", // you’ll fetch this dynamically
+            fontSize = 10.sp,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(4.dp),
+            color = Color.Gray
+        )
+
     }
 }
 
@@ -380,7 +410,7 @@ fun OddsTable(
     onDeleteOdds: (Int) -> Unit = { _ -> },
     onInsertOdds: (Int) -> Unit = { _ -> }
 ) {
-    val oddsData = when(uiState.oddsType) {
+    val oddsData = when (uiState.oddsType) {
         OddsType.WINPLACE -> uiState.odds.data
         OddsType.QUINELLA -> uiState.odds.qData
     }
@@ -392,13 +422,15 @@ fun OddsTable(
 
     Column(modifier = modifier) {
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color(0xFF253172)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF253172)),
         ) {
             header.forEachIndexed { i, cell ->
                 Text(
                     text = cell,
                     modifier = Modifier
-                        .weight(if(i == header.size - 1 || i == 0) 1f else 2f)
+                        .weight(if (i == header.size - 1 || i == 0) 1f else 2f)
                         .padding(horizontal = 10.dp, vertical = 5.dp),
                     textAlign = TextAlign.Left,
                     fontSize = 15.sp,
@@ -410,15 +442,18 @@ fun OddsTable(
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            val duplicatesTabIndices = findColumnDuplicates(oddsData, col=0)
-            val duplicatesOddsIndices = findColumnDuplicates(oddsData, col=1)
-            val descendingOddsIndices = findDecreasingIndices(oddsData, col=1)
+            val duplicatesTabIndices = findColumnDuplicates(oddsData, col = 0)
+            val duplicatesOddsIndices = findColumnDuplicates(oddsData, col = 1)
+            val descendingOddsIndices = findDecreasingIndices(oddsData, col = 1)
             oddsData.forEachIndexed { i, row ->
                 Row(modifier = Modifier.fillMaxWidth()) {
                     row.forEachIndexed { j, cell ->
-                        if(j == 0) {
+                        if (j == 0) {
                             Column(
-                                modifier = Modifier.weight(1f).height(45.dp).background(Color(0xFFB5C3FD))
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(45.dp)
+                                    .background(Color(0xFFB5C3FD))
                                     .drawBehind {
                                         val strokeWidth = 1.dp.toPx()
                                         val width = size.width
@@ -437,9 +472,18 @@ fun OddsTable(
                             ) {
                                 Text(
                                     fontSize = 12.sp,
-                                    text = when(uiState.oddsType) {
-                                        OddsType.WINPLACE -> if(uiState.odds.data[i].subList(0, 2) in uiState.newAffectedRows[0]) "${i + 1}+" else "${i + 1}"
-                                        OddsType.QUINELLA -> if(uiState.odds.qData[i].subList(0, 2) in uiState.newAffectedRows[1]) "${i + 1}+" else "${i + 1}"
+                                    text = when (uiState.oddsType) {
+                                        OddsType.WINPLACE -> if (uiState.odds.data[i].subList(
+                                                0,
+                                                2
+                                            ) in uiState.newAffectedRows[0]
+                                        ) "${i + 1}+" else "${i + 1}"
+
+                                        OddsType.QUINELLA -> if (uiState.odds.qData[i].subList(
+                                                0,
+                                                2
+                                            ) in uiState.newAffectedRows[1]
+                                        ) "${i + 1}+" else "${i + 1}"
                                     }
                                 )
                             }
@@ -454,21 +498,30 @@ fun OddsTable(
                             onValueChange = {
                                 onCellValueChange(i, j, it)
                             },
-                            isTab = j % 2 ==  0,
-                            isInvalid = when(j) {
-                                0 -> when(oddsType) {
-                                    OddsType.WINPLACE -> cell.isEmpty() || (cell.toIntOrNull() ?: 0) !in 1..20 || i in duplicatesTabIndices
-                                    OddsType.QUINELLA -> cell.isEmpty() || i in duplicatesTabIndices || !cell.contains("+") || !Utils.isValidCombo(cell)
+                            isTab = j % 2 == 0,
+                            isInvalid = when (j) {
+                                0 -> when (oddsType) {
+                                    OddsType.WINPLACE -> cell.isEmpty() || (cell.toIntOrNull()
+                                        ?: 0) !in 1..20 || i in duplicatesTabIndices
+
+                                    OddsType.QUINELLA -> cell.isEmpty() || i in duplicatesTabIndices || !cell.contains(
+                                        "+"
+                                    ) || !Utils.isValidCombo(cell)
                                 }
-                                1 -> when(oddsType) {
-                                    OddsType.WINPLACE, OddsType.QUINELLA -> cell.isEmpty() || !cell.contains(".") || i in descendingOddsIndices || cell.contains("\n")
+
+                                1 -> when (oddsType) {
+                                    OddsType.WINPLACE, OddsType.QUINELLA -> cell.isEmpty() || !cell.contains(
+                                        "."
+                                    ) || i in descendingOddsIndices || cell.contains("\n")
                                 }
+
                                 else -> false
                             },
-                            isCaution = when(j) {
-                                1 -> when(oddsType) {
+                            isCaution = when (j) {
+                                1 -> when (oddsType) {
                                     OddsType.WINPLACE, OddsType.QUINELLA -> i in duplicatesOddsIndices
                                 }
+
                                 else -> false
                             }
                         )
@@ -530,12 +583,12 @@ fun OddsTable(
             }
             Spacer(modifier = Modifier.height(5.dp))
             Row() {
-                val textColor: Color = if(trackTake.toDoubleOrNull() != null) {
-                    val isTrackTakeInValidRange = when(uiState.oddsType) {
+                val textColor: Color = if (trackTake.toDoubleOrNull() != null) {
+                    val isTrackTakeInValidRange = when (uiState.oddsType) {
                         OddsType.WINPLACE -> trackTake.toDouble() in 19.0..21.0
                         OddsType.QUINELLA -> trackTake.toDouble() in 26.0..28.0
                     }
-                    if(isTrackTakeInValidRange) Color.Black else Color(0xFFFC1D3C)
+                    if (isTrackTakeInValidRange) Color.Black else Color(0xFFFC1D3C)
                 } else {
                     Color(0xFFFC1D3C)
                 }
@@ -653,7 +706,6 @@ fun OddsTable(
 }
 
 
-
 @Composable
 fun OddsTableTextField(
     modifier: Modifier,
@@ -681,7 +733,7 @@ fun OddsTableTextField(
             } else {
                 if (isInvalid) {
                     Color(0xFFFC1D3C)
-                } else if(isCaution) {
+                } else if (isCaution) {
                     Color(0xFFF8F81F)
                 } else {
                     Color.White
@@ -737,7 +789,7 @@ fun OddsTableRowActionBar(
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Favorite"
