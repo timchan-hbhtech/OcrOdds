@@ -66,6 +66,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
@@ -610,97 +611,84 @@ fun OddsTable(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Button(
-                    modifier = Modifier.wrapContentSize(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                IconTextButton(
+                    icon = Icons.Default.Add,
+                    text = "Add Data",
                     onClick = { onAddNewData() }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(0.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            tint = Color.Gray,
-                            contentDescription = "Favorite icon"
-                        )
-                        Text(
-                            text = "Add Data"
-                        )
-                    }
-                }
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Button(
-                    modifier = Modifier.wrapContentSize(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                IconTextButton(
+                    icon = Icons.Default.Delete,
+                    text = "Delete Data",
                     onClick = { onDeleteNewOdds() }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(0.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            tint = Color.Gray,
-                            contentDescription = "Favorite icon"
-                        )
-                        Text(
-                            text = "Delete Data"
-                        )
-                    }
-                }
+                )
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Button(
-                    modifier = Modifier.wrapContentSize(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                IconTextButton(
+                    icon = Icons.Default.Upload,
+                    text = "Sync web",
                     onClick = { onSyncWeb() }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(0.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Upload,
-                            tint = Color.Gray,
-                            contentDescription = "Favorite icon"
-                        )
-                        Text(
-                            text = "Sync web"
-                        )
-                    }
-                }
+                )
 
                 Spacer(modifier = Modifier.width(10.dp))
 
-                Button(
-                    modifier = Modifier.wrapContentSize(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF253172)),
+                IconTextButton(
+                    icon = Icons.Default.Download,
+                    text = "Sync local",
                     onClick = { onSyncLocal() }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(0.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Download,
-                            tint = Color.Gray,
-                            contentDescription = "Favorite icon"
-                        )
-                        Text(
-                            text = "Sync local"
-                        )
-                    }
-                }
+                )
             }
+        }
+    }
+}
+
+/**
+ * Reusable button with a leading icon and a text label.
+ *
+ * @param icon icon displayed before the text
+ * @param text label displayed on the button
+ * @param onClick invoked when the button is clicked
+ * @param modifier modifier applied to the button
+ * @param containerColor background color of the button
+ * @param contentColor color of the text
+ * @param iconTint tint applied to the icon
+ * @param enabled whether the button is clickable
+ */
+@Composable
+fun IconTextButton(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color = Color(0xFF253172),
+    contentColor: Color = Color.White,
+    iconTint: Color = Color.Gray,
+    enabled: Boolean = true
+) {
+    Button(
+        modifier = modifier.wrapContentSize(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        ),
+        enabled = enabled,
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.padding(0.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                tint = iconTint,
+                contentDescription = null
+            )
+            Text(text = text)
         }
     }
 }

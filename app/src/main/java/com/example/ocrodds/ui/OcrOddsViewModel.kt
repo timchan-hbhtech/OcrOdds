@@ -725,6 +725,7 @@ class OcrOddsViewModel(
 
                     updateProcessedBitmap(processedBitmap)
 
+                    // Do image recognition
                     recognizeProcessedBitmap(
                         onRecognitionFailure,
                         onRecognitionFinish
